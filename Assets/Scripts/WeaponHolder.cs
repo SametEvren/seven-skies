@@ -8,10 +8,13 @@ public class WeaponHolder : MonoBehaviour
 
     private Transform handBone;
     private GameObject currentWeapon;
+    private Animator animator;
+
+    static readonly int IsArmedHash = Animator.StringToHash("IsArmed");
 
     void Start()
     {
-        var animator = GetComponent<Animator>();
+        animator = GetComponent<Animator>();
         handBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
     }
 
@@ -23,6 +26,8 @@ public class WeaponHolder : MonoBehaviour
         currentWeapon = Instantiate(weaponPrefab, handBone);
         currentWeapon.transform.localPosition = gripPositionOffset;
         currentWeapon.transform.localRotation = Quaternion.Euler(gripRotationOffset);
+
+        animator.SetBool(IsArmedHash, true);
     }
 
     public void Unequip()
@@ -32,6 +37,8 @@ public class WeaponHolder : MonoBehaviour
             Destroy(currentWeapon);
             currentWeapon = null;
         }
+
+        animator.SetBool(IsArmedHash, false);
     }
 
     public bool HasWeapon => currentWeapon != null;

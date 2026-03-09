@@ -15,7 +15,7 @@ public class LootPickup : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        var holder = other.GetComponent<WeaponHolder>();
+        var holder = other.GetComponentInParent<WeaponHolder>();
         if (holder == null)
             return;
 
