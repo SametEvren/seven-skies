@@ -22,8 +22,14 @@ public class MobAI : MonoBehaviour
     public float delayBetweenAttacks = 0.4f;
     public float cooldownAfterCombo = 2.5f;
 
+    [Header("Damage")]
+    public int attackDamage = 15;
+    public float hitRadius = 1.8f;
+    public float hitForwardOffset = 1f;
+
     Animator animator;
     CharacterController controller;
+    Health health;
 
     enum State { Idle, Chase, Attack, Cooldown }
     State currentState = State.Idle;
@@ -40,6 +46,7 @@ public class MobAI : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         controller = GetComponent<CharacterController>();
+        health = GetComponent<Health>();
     }
 
     void Start()
@@ -54,6 +61,7 @@ public class MobAI : MonoBehaviour
     void Update()
     {
         if (player == null) return;
+        if (health != null && health.IsDead) return;
 
         if (controller.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
@@ -147,7 +155,23 @@ public class MobAI : MonoBehaviour
         animator.SetBool(IsAttackingHash, true);
     }
 
-    // Her attack animasyon klibinin sonuna Animation Event olarak ekle
+    // Animation Event: attack animasyonunun vurus anina ekle
+    public void OnMobAttackHit()
+    {
+        if (player == null) return;
+
+        Vector3 center = transform.position + transform.forward * hitForwardOffset + Vector3.up;
+        float dist = Vector3.Distance(center, player.position);
+
+        if (dist <= hitRadius)
+        {
+            var playerHealth = player.GetComponent<Health>();
+            if (playerHealth != null && !playerHealth.IsDead)
+                playerHealth.TakeDamage(attackDamage);
+        }
+    }
+
+    // Animation Event: her attack klibinin sonuna ekle
     public void OnMobAttackEnd()
     {
         currentAttack++;

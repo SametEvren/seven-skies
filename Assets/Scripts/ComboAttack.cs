@@ -7,6 +7,11 @@ public class ComboAttack : MonoBehaviour
     public int maxCombo = 3;
     public float comboResetTime = 1.2f;
 
+    [Header("Damage")]
+    public int attackDamage = 10;
+    public float hitRadius = 1.5f;
+    public float hitForwardOffset = 1f;
+
     private Animator animator;
     private WeaponHolder weaponHolder;
 
@@ -47,9 +52,31 @@ public class ComboAttack : MonoBehaviour
         animator.SetInteger(AttackIndexHash, currentCombo);
         animator.SetTrigger(AttackTriggerHash);
         animator.SetBool(IsAttackingHash, true);
+
+        weaponHolder.SetTrailActive(true);
     }
 
-    // Animation Event: her attack animasyonunun sonuna eklenecek
+    // Animation Event: attack animasyonunun vurus anina ekle
+    public void OnAttackHit()
+    {
+        Vector3 center = transform.position + transform.forward * hitForwardOffset + Vector3.up;
+        Collider[] hits = Physics.OverlapSphere(center, hitRadius);
+
+        foreach (var hit in hits)
+        {
+            if (hit.transform == transform || hit.transform.IsChildOf(transform))
+                continue;
+
+            var health = hit.GetComponentInParent<Health>();
+            if (health != null && !health.IsDead)
+            {
+                health.TakeDamage(attackDamage);
+                break;
+            }
+        }
+    }
+
+    // Animation Event: her attack animasyonunun sonuna ekle
     public void OnAttackEnd()
     {
         if (attackQueued && currentCombo < maxCombo - 1)
@@ -64,6 +91,7 @@ public class ComboAttack : MonoBehaviour
             attackQueued = false;
             currentCombo = 0;
             animator.SetBool(IsAttackingHash, false);
+            weaponHolder.SetTrailActive(false);
         }
     }
 }

@@ -9,6 +9,7 @@ public class WeaponHolder : MonoBehaviour
     private Transform handBone;
     private GameObject currentWeapon;
     private Animator animator;
+    private TrailRenderer[] trails;
 
     static readonly int IsArmedHash = Animator.StringToHash("IsArmed");
 
@@ -27,6 +28,9 @@ public class WeaponHolder : MonoBehaviour
         currentWeapon.transform.localPosition = gripPositionOffset;
         currentWeapon.transform.localRotation = Quaternion.Euler(gripRotationOffset);
 
+        trails = currentWeapon.GetComponentsInChildren<TrailRenderer>(true);
+        SetTrailActive(false);
+
         animator.SetBool(IsArmedHash, true);
     }
 
@@ -38,7 +42,19 @@ public class WeaponHolder : MonoBehaviour
             currentWeapon = null;
         }
 
+        trails = null;
         animator.SetBool(IsArmedHash, false);
+    }
+
+    public void SetTrailActive(bool active)
+    {
+        if (trails == null) return;
+        foreach (var trail in trails)
+        {
+            if (trail == null) continue;
+            trail.emitting = active;
+            if (!active) trail.Clear();
+        }
     }
 
     public bool HasWeapon => currentWeapon != null;
